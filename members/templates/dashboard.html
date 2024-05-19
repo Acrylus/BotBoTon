@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'dashboard.css' %}">
+    </head>
+<body>
+
+    <div class="container">
+        <h1>BotBoTon</h1>
+        <form id="grammarForm" method="post" action="">
+            {% csrf_token %}
+            <textarea class="field" name="field" id="input_data" placeholder="Start typing..." cols="100" rows="10"></textarea>
+            
+            <textarea class="correct" name="correct" id="output_data" placeholder="Corrected text will appear here..." cols="100" rows="10" readonly></textarea>
+        </form>
+        {% if prediction %}
+            <h2>Corrected Sentence: {{ prediction }}</h2>
+        {% endif %}
+        {% if highlighted %}
+            <h2>Highlighted Sentence: {{ highlighted|safe }}</h2>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById('input_data').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                correctGrammar();
+            }
+        });
+
+        async function correctGrammar() {
+            const input_data = document.getElementById('input_data').value;
+            const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            const response = await fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrf_token
+                },
+                body: new URLSearchParams({
+                    'input_data': input_data
+                })
+            });
+
+            const data = await response.json();
+            if (data.prediction) {
+                document.getElementById('output_data').value = data.prediction;
+            }
+        }
+    </script>
+
+</body> 
+</html>
